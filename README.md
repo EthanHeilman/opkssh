@@ -13,7 +13,7 @@ To ssh with opkssh you first need to download the opkssh binary and then run:
 opkssh login
 ```
 
-This opens a browser window where you can authenticate to your OpenID Provider. This will generate an SSH certificate in `~/.ssh/id_ecdsa-cert.pub` which contains your OpenID Connect identity.
+This opens a browser window where you can authenticate to your OpenID Provider. By default this will generate an SSH private key in `~/.ssh/id_ecdsa` and an SSH certificate in `~/.ssh/id_ecdsa-cert.pub`; the certificate contains your OpenID Connect identity.
 Then you can ssh under this identity to any ssh server which is configured to use opkssh to authenticate users using their OpenID Connect identities.
 
 ```bash
@@ -106,16 +106,16 @@ opkssh login
 ```
 
 This opens a browser window to select which OpenID Provider you want to authenticate against.
-After successfully authenticating opkssh generates an SSH public key in `~/.ssh/id_ecdsa` which contains your PK Token.
-By default this ssh key expires after 24 hours and you must run `opkssh login` to generate a new ssh key.
+After successfully authenticating, opkssh generates an SSH private key in `~/.ssh/id_ecdsa` and an SSH certificate in `~/.ssh/id_ecdsa-cert.pub` which contains your PK Token.
+This ssh certificate expires after 24 hours and you must run `opkssh login` to generate a new one (expiration time cna be configured)./
 
-Since your PK Token has been saved as an SSH key you can SSH as normal:
+Since your PK Token has been saved in an SSH certificate you can SSH as normal:
 
 ```bash
 ssh root@example.com
 ```
 
-This works because SSH sends the certificate written by opkssh in `~/.ssh/id_ecdsa-cert.pub` containing the public key to the server and sshd running on the server will send this to the opkssh command to verify. This also works for other protocols that build on ssh like [sftp](https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol) or ssh tunnels.
+This works because ssh sends the certificate written by opkssh in `~/.ssh/id_ecdsa-cert.pub` (and proves possession of the matching private key), and sshd on the server sends that certificate to `opkssh verify` to verify. This also works for other protocols that build on ssh like [sftp](https://en.wikipedia.org/wiki/SSH_File_Transfer_Protocol) or ssh tunnels.
 
 ```bash
 sftp root@example.com
@@ -580,7 +580,7 @@ Do not use Confidential/Secret mode **only** client ID is needed.
 To inspect and view details of an opkssh-generated SSH key or certificate:
 
 ```cmd
-opkssh inspect ~/.ssh/id_ecdsa.pub
+opkssh inspect ~/.ssh/id_ecdsa-cert.pub
 ```
 
 ### Audit
